@@ -7,7 +7,7 @@ export FluidCommentForm from './FluidCommentForm';
 export FluidCommentWidget from './FluidCommentWidget';
 export FluidCommentWrapper from './FluidCommentWrapper';
 export InlineLoginForm from './InlineLoginForm';
-export { getResponseDocument, getDeepProp } from './functions';
+export { getResponseDocument, getDeepProp, getUrl } from './functions';
 
 document.addEventListener("DOMContentLoaded", function() {
   const domContainer = document.querySelector('#fluid-comment-root');

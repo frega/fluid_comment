@@ -3,7 +3,7 @@
 let token = null;
 function getToken() {
   if (!token) {
-    return fetch('http://dbug.test/session/token', {credentials: 'include'}).then(response => {
+    return fetch(getUrl('/session/token'), {credentials: 'include'}).then(response => {
       if (response.ok) {
         return response.text().then(text => {
           console.log(text);
@@ -20,6 +20,11 @@ function getToken() {
     return Promise.resolve(token);
   }
 }
+
+/**
+ * @todo make configurable.
+ */
+export function getUrl(path = '') { return `${window.location.origin}${path}` };
 
 export function getDeepProp(obj, path) {
   return path.split('.').reduce((obj, prop) => {

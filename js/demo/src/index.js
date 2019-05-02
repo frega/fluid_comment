@@ -3,11 +3,12 @@ import {render} from 'react-dom'
 import {
   FluidCommentWrapper,
   getDeepProp,
-  getResponseDocument
+  getResponseDocument,
+  getUrl
 } from '../../src'
 
-const loginUrl = 'http://dbug.test/user/login?_format=json';
-const entryPointUrl = 'http://dbug.test/jsonapi';
+const loginUrl = getUrl('/user/login?_format=json');
+const entryPointUrl = getUrl('/jsonapi');
 const commentType = 'comment--comment';
 const hostType = 'node--article';
 const hostId = 'c39a72fe-f486-4f6a-980b-73e0a8d467c3';
