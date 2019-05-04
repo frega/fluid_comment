@@ -17,24 +17,52 @@ class FluidComment extends React.Component {
     const published = getDeepProp(comment, 'attributes.status');
     const selfLink = getDeepProp(comment, 'links.self');
     const deletable = selfLink.hasOwnProperty('rel') && selfLink['rel'].includes('delete');
-    const style = {
-      borderLeft: '1px solid grey',
-      paddingLeft: '1em',
-      display: 'inline-block',
-      width: '100%',
+    const author = {
+      name: getDeepProp(comment, 'user.attributes.name'),
+      image: getDeepProp(comment, 'user.picture.attributes.uri.url')
     };
-    if (this.props.index > 0) {
-      style['marginTop'] = '1em';
-    }
-    if (!published) {
-      style['background'] = '#fff4f4';
-    }
+
+    const classes = {
+      article: [
+        'comment',
+        'js-comment',
+        `comment--${published}`,
+        // 'by-anonymous'
+        // 'by-' ~ commented_entity.getEntityTypeId() ~ '-author'
+        'clearfix'
+      ],
+      content: [
+        'text-formatted',
+        'field',
+        'field--name-comment-body',
+        'field--type-text-long',
+        'field--label-hidden',
+        'field__item',
+        'clearfix'
+      ]
+    };
+
     return (
-        <article style={style}>
-          <h3>{ subject }</h3>
-          <div dangerouslySetInnerHTML={{__html: body}}></div>
-          {deletable && <ul>
-            <a href="_blank" onClick={this.deleteComment}>Delete</a>
+        <article role="article" className={classes.article.join(' ')}>
+          <span className="hidden" data-comment-timestamp="{{ new_indicator_timestamp }}"></span>
+          <footer className="comment__meta">
+            {author.image && <img src={author.image} alt={author.name} />}
+            <p className="comment__author">{author.name}</p>
+            <p className="comment__time">created</p>
+            <p className="comment__permalink">permalink</p>
+            <p className="visually-hidden">parent</p>
+          </footer>
+          <div className="comment__content">
+            <h3>{ subject }</h3>
+            <div
+              className={classes.content.join(' ')}
+              dangerouslySetInnerHTML={{__html: body}}>
+            </div>
+          </div>
+          {deletable && <ul className="links inline">
+            <li className="comment-delete">
+              <a href="_blank" onClick={this.deleteComment}>Delete</a>
+            </li>
           </ul>}
         </article>
     );

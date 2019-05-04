@@ -17,21 +17,33 @@ class FluidCommentWrapper extends React.Component {
   }
 
   filteredCommentsUrl() {
-    return `${this.props.commentsUrl}/?filter[entity_id.id]=${this.props.hostId}`
+    const { hostId, commentsUrl } = this.props;
+    const id = 'entity_id.id';
+    const include = 'uid.user_picture';
+
+    return `${commentsUrl}/?filter[${id}]=${hostId}&include=${include}`;
   }
 
   render() {
     const content = [];
     if (this.state.comments.length) {
-      content.push(this.state.comments.map((comment, index) => {
-        return (<FluidComment key={comment.id} comment={comment} index={index} onDelete={() => this.refreshComments()}/>);
-      }));
+
+      content.push(this.state.comments.map((comment, index) => (
+        <FluidComment
+          key={comment.id}
+          index={index}
+          comment={comment}
+          onDelete={() => this.refreshComments()}
+        />
+      )));
     }
+
     if (this.state.loggedIn === false) {
       const onLogin = (success) => {
         this.setState({loggedIn: !!success});
         this.refreshComments();
       };
+
       content.push((
           <div>
             <h3>Log in to comment:</h3>
@@ -46,18 +58,49 @@ class FluidCommentWrapper extends React.Component {
   }
 
   refreshComments() {
-    this.getAndAddComments(this.filteredCommentsUrl(), []);
+    this.getAndAddComments(this.filteredCommentsUrl());
   }
 
-  getAndAddComments(commentsUrl, previous) {
+  /**
+   * @todo Replace with serializing
+   */
+  mergeIncluded(comments, included) {
+    return comments.map(comment => {
+
+      const { uid } = comment.relationships;
+      const users = included.filter(item => item.id === uid.data.id);
+
+      if (users.length > 0) {
+        let user = users[0];
+        const pic = getDeepProp(user, 'relationships.user_picture');
+        if (pic) {
+          const pictures = included.filter(item => item.id === pic.data.id);
+          if (pictures.length > 0) {
+            user = Object.assign(user, { picture: pictures[0] });
+          }
+        }
+
+        return Object.assign(comment, { user });
+      }
+
+      return comment;
+    })
+  }
+
+  getAndAddComments(commentsUrl, previous = []) {
+
     getResponseDocument(commentsUrl).then(doc => {
       const data = getDeepProp(doc, 'data');
+      const included = getDeepProp(doc, 'included');
       const nextUrl = getDeepProp(doc, 'links.next.href');
+
+      const comments = [...previous, ...this.mergeIncluded(data, included)];
+
       if (nextUrl) {
-        this.getAndAddComments(nextUrl, data);
+        this.getAndAddComments(nextUrl, comments);
       }
       else {
-        this.setState({ comments: previous.concat(data) });
+        this.setState({ comments });
       }
     });
   }
