@@ -1,15 +1,15 @@
 import { getDeepProp } from './functions';
 
 const rels = {
-  'https://jsonapi.org/profiles/drupal/hypermedia/#add': {
+  'add': {
     alias: 'add',
     method: 'POST'
   },
-  'https://jsonapi.org/profiles/drupal/hypermedia/#update': {
+  'update': {
     alias: 'update',
     method: 'PATCH'
   },
-  'https://jsonapi.org/profiles/drupal/hypermedia/#delete': {
+  'remove': {
     alias: 'delete',
     method: 'DELETE'
   },
