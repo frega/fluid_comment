@@ -4,6 +4,7 @@ import React from 'react';
 import { format } from 'date-fns';
 import ScrollableAnchor from 'react-scrollable-anchor';
 
+import FluidCommentContext from './FluidCommentContext';
 import FluidCommentContent from './FluidCommentContent';
 import FluidCommentForm from './FluidCommentForm';
 import FluidCommentAction from './FluidCommentAction';
@@ -72,6 +73,7 @@ function processLinks(links) {
 }
 
 class FluidComment extends React.Component {
+  static contextType = FluidCommentContext;
 
   constructor(props) {
     super(props);
@@ -187,7 +189,7 @@ class FluidComment extends React.Component {
         break;
 
       case 'PATCH':
-        body = formatBodyUpdate(values, id, type);
+        body = formatBodyUpdate(values, id, type, this.context.filterDefaultFormat);
         break;
 
       default:

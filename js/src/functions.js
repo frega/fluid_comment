@@ -94,14 +94,14 @@ export function formatBodyAdd(values, node, field, type) {
   return JSON.stringify({ data: { attributes, relationships, type } });
 }
 
-export function formatBodyUpdate(values, id, type) {
+export function formatBodyUpdate(values, id, type, format) {
   const { subject, body } = values;
 
   const attributes = {
     subject: subject,
     comment_body: {
       value: body,
-      format: 'restricted_html',
+      format: format,
     },
   };
 
