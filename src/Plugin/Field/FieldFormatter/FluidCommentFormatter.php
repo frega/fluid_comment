@@ -66,6 +66,7 @@ class FluidCommentFormatter extends CommentDefaultFormatter {
       $comment_type_name = $this->resourceTypeRepository->get('comment', $items->getFieldDefinition()->getItemDefinition()->getSetting('comment_type'))->getTypeName();
       $build['#theme'] = 'fluid_comment_formatter';
       $build['#comment_type'] = $comment_type_name;
+      $build['#comment_field_name'] = $items->getFieldDefinition()->getName();
       $build['#commented_resource_url'] = Url::fromRoute("jsonapi.$host_type_name.individual", ['entity' => $host_id])->setAbsolute()->toString(TRUE)->getGeneratedUrl();
       $build['#filter_default_format'] = filter_default_format($this->currentUser);
       $build['#attached'] = [

@@ -1,7 +1,7 @@
 'use strict';
 import React from 'react';
 import { getDeepProp, getResponseDocument, formatBodyAdd, getFormKey } from './functions';
-import { getRelUri, objectHasLinkWithRel } from './routes';
+import { objectHasLinkWithLinkRelationType, getLinkObjectsByLinkRelationType, getLinkHrefByLinkRelationType } from './routes';
 
 import FluidCommentList from './FluidCommentList';
 import FluidCommentForm from './FluidCommentForm';
@@ -23,13 +23,13 @@ class FluidCommentWrapper extends React.Component {
     this.refreshComments();
   }
 
-  render() {
-    const { currentNode, filterDefaultFormat } = this.props;
-    const { comments, isRefreshing, threaded, formKey } = this.state;
-    const addLink = getRelUri('add');
-    const hasLink = objectHasLinkWithRel(currentNode, 'comments', addLink);
 
-    const show = currentNode && objectHasLinkWithRel(currentNode, 'comments', getRelUri('collection'));
+  render() {
+    const { currentNode, filterDefaultFormat, commentFieldName } = this.props;
+    const { comments, isRefreshing, threaded, formKey } = this.state;
+    const hasLink = objectHasLinkWithLinkRelationType(currentNode, commentFieldName, 'comment');
+
+    const show = currentNode && objectHasLinkWithLinkRelationType(currentNode, commentFieldName, 'comments');
 
     return (
       <FluidCommentContext.Provider value={{ isRefreshing, filterDefaultFormat }}>
@@ -55,13 +55,17 @@ class FluidCommentWrapper extends React.Component {
   }
 
   addComment = (values) => {
-    const { currentNode: node, commentType: type } = this.props;
-    const commentsUrl = getDeepProp(node, 'links.comments.href');
-    const field = getDeepProp(node, 'links.comments.meta.commentFieldName');
-    const body = formatBodyAdd(values, node, field, type);
-    const method = 'POST';
+    const { currentNode: node, commentType: type, commentFieldName } = this.props;
 
-    if (objectHasLinkWithRel(node, 'comments', getRelUri('add'))) {
+    if (objectHasLinkWithLinkRelationType(node, commentFieldName, 'comment')) {
+      // @todo: catch potential multiple matches.
+      const linkObject = getLinkObjectsByLinkRelationType(node, commentFieldName, 'comment')[0];
+
+      const commentsUrl = linkObject.href;
+      const field = linkObject.meta.commentFieldName;
+      const body = formatBodyAdd(values, node, field, type);
+      const method = 'POST';
+
       getResponseDocument(commentsUrl, { method, body }).then(doc => {
         if (!doc.errors) {
           this.refreshComments();
@@ -72,10 +76,10 @@ class FluidCommentWrapper extends React.Component {
   };
 
   refreshComments = () => {
-    const { currentNode: node } = this.props;
-    const commentsUrl = getDeepProp(node, 'links.comments.href');
+    const { currentNode: node, commentFieldName } = this.props;
 
-    if (objectHasLinkWithRel(node, 'comments', getRelUri('collection'))) {
+    if (objectHasLinkWithLinkRelationType(node, commentFieldName, 'comments')) {
+      const commentsUrl = getLinkHrefByLinkRelationType(node, commentFieldName, 'comments');
       this.getAndAddComments(`${commentsUrl}/?include=uid.user_picture`);
     }
   };

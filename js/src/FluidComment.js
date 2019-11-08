@@ -58,8 +58,8 @@ function processLinks(links) {
     const meta = getMetaFromRel(rel);
 
     meta.forEach(relMeta => {
-      const { alias, method } = relMeta;
-      const name = key === 'self' ? alias : key;
+      const { type, method } = relMeta;
+      const name = key === 'self' ? type : key;
       const title = key === 'self'
         ? getSelfTitle(method)
         : getLinkTitles(key);
