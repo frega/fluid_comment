@@ -35,26 +35,31 @@ export const getMetaFromRel = (rel) => (
 
 
 /**
+ * Returns link keys with matching comment field name and link relation type.
  *
- * @param obj
- * @param commentFieldName  @todo: filter on commentFieldName name.
- * @param linkRelationType search for this link relation type.
+ * @param {object} JSON:API object
+ * @param {string} commentFieldName  filter on commentFieldName name.
+ * @param {string} linkRelationType  search for this link relation type.
  * @returns {string[]}
  */
 function getMatchingLinkKeysByLinkRelationType(obj, commentFieldName, linkRelationType) {
   const relUri = getRelUriByLinkRelationType(linkRelationType);
-  return Object.keys(obj['links']).filter(function(key) {
-    const rels = getDeepProp(obj['links'][key], `meta.linkParams.rel`);
-    return Array.isArray(rels) && rels.includes(relUri);
+  return Object.keys(obj.links).filter(function(key) {
+    const linkParams = getDeepProp(obj.links[key], 'meta.linkParams');
+    // Exclude if no linkParams or not an object or not matching field name.
+    if (!linkParams || typeof linkParams !== 'object' || linkParams['commentFieldName'] != commentFieldName) {
+      return false;
+    }
+    return Array.isArray(linkParams['rel']) && linkParams['rel'].includes(relUri);
   });
 }
 
 /**
  * Returns true if object has one or more links with given link relation type.
  *
- * @param obj
- * @param commentFieldName  @todo: filter on commentFieldName name.
- * @param linkRelationType search for this link relation type.
+ * @param {object} JSON:API object
+ * @param {string} commentFieldName  filter on commentFieldName name.
+ * @param {string} linkRelationType  search for this link relation type.
  * @returns {boolean}
  */
 export function objectHasLinkWithLinkRelationType(obj, commentFieldName, linkRelationType) {
@@ -62,11 +67,11 @@ export function objectHasLinkWithLinkRelationType(obj, commentFieldName, linkRel
 }
 
 /**
- * Returns link objects with a matching relUri.
+ * Get link objects by comment field name and link relation type.
  *
- * @param obj
- * @param commentFieldName  @todo: filter on commentFieldName name.
- * @param linkRelationType
+ * @param {object} JSON:API object
+ * @param {string} commentFieldName  filter on commentFieldName name.
+ * @param {string} linkRelationType  search for this link relation type.
  * @returns {Array<any>}
  */
 export function getLinkObjectsByLinkRelationType(obj, commentFieldName, linkRelationType) {
@@ -76,14 +81,20 @@ export function getLinkObjectsByLinkRelationType(obj, commentFieldName, linkRela
 }
 
 /**
- * @param obj
- * @param commentFieldName
- * @param linkRelationType
+ * Get link href by comment field name and link relation type.
+ *
+ * @param {object} JSON:API object
+ * @param {string} commentFieldName  filter on commentFieldName name.
+ * @param {string} linkRelationType  search for this link relation type.
+ * @returns {string|null} Null if no matching link or href of matched link.
  */
 export function getLinkHrefByLinkRelationType(obj, commentFieldName, linkRelationType) {
   const matchingLinkObjects = getLinkObjectsByLinkRelationType(obj, commentFieldName, linkRelationType);
+  if (!matchingLinkObjects.length) {
+    return null;
+  }
   if (matchingLinkObjects.length > 1) {
-    throw new Exception('@todo: this is a temporary exception as we currently do not filter by commentFieldName');
+    throw new Error('@todo: this is a temporary exception as we currently do not filter by commentFieldName');
   }
   return matchingLinkObjects[0].href;
 }
